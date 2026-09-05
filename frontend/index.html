@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Learning AI Agent - Interactive Git & GitHub Tutor</title>
+  <meta name="description" content="An interactive AI Agent that teaches Git and GitHub with real-time tool calling, hands-on tasks, and SQLite progress tracking.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- TOP HEADER -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-badge">
+          <svg class="git-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">GitHub Learning AI Agent</h1>
+          <p class="app-subtitle">Powered by LangChain &bull; OpenRouter &bull; GitHub REST API</p>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div class="status-pill status-online" id="status-fastapi" title="Backend connection active">
+          <span class="status-dot"></span> FastAPI Server
+        </div>
+        <div class="status-pill status-provider" id="status-openrouter" title="LLM provider">
+          <span class="provider-icon">⚡</span> OpenRouter
+        </div>
+        <div class="skill-badge" id="skill-badge">
+          Level: <span id="skill-level-text">Beginner</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN 3-COLUMN WORKSPACE -->
+    <main class="main-container">
+      <!-- LEFT SIDEBAR: CURRICULUM & PROGRESS -->
+      <aside class="sidebar-curriculum" aria-label="Curriculum & Progress">
+        <div class="card progress-card">
+          <div class="progress-card-header">
+            <span class="card-label">YOUR PROGRESS</span>
+            <span class="progress-percent" id="progress-percent-label">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-summary">
+            <span id="completed-count-text">0 of 10</span> lessons completed
+          </div>
+        </div>
+
+        <div class="syllabus-header">
+          <h2>Learning Path</h2>
+          <button class="btn-text-danger" id="reset-progress-btn" title="Reset all progress and scores">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset
+          </button>
+        </div>
+
+        <div class="lesson-list" id="lesson-list-container" role="list">
+          <!-- Populated by script.js with 10 lessons -->
+          <div class="loading-state">Loading curriculum...</div>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN: CHAT INTERFACE -->
+      <section class="chat-section" aria-label="Interactive AI Agent Chat">
+        <div class="chat-header">
+          <div class="agent-profile">
+            <div class="agent-avatar">🤖</div>
+            <div>
+              <div class="agent-name">GitCoach AI</div>
+              <div class="agent-status" id="agent-status-label">
+                <span class="pulse-dot"></span> Ready to teach & call GitHub tools
+              </div>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn-secondary" id="clear-chat-btn" title="Clear chat messages">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- MESSAGES FEED -->
+        <div class="chat-feed" id="chat-feed" role="log" aria-live="polite">
+          <div class="message-bubble message-agent welcome-bubble">
+            <div class="bubble-header">
+              <span class="bubble-sender">GitCoach AI</span>
+              <span class="bubble-tag">AGENT READY</span>
+            </div>
+            <div class="bubble-content">
+              <p>Welcome! I am your <strong>GitHub Learning AI Agent</strong>.</p>
+              <p>I use <strong>LangChain</strong> to reason, teach concepts step-by-step, and inspect live GitHub repositories using tool calling.</p>
+              <p>Try asking me about <strong>Lesson 1 (Git vs GitHub)</strong> or click a quick prompt below!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK PROMPT CHIPS -->
+        <div class="quick-prompts-bar">
+          <span class="quick-label">QUICK PROMPTS:</span>
+          <div class="quick-chips" id="quick-chips">
+            <button class="chip-btn" data-prompt="Teach me Lesson 1: Git vs GitHub">📖 Start Lesson 1</button>
+            <button class="chip-btn" data-prompt="Search for popular Python repositories on GitHub">🔍 Search Repos</button>
+            <button class="chip-btn" data-prompt="Show me recent commits on octocat/Spoon-Knife">📦 Inspect Commits</button>
+            <button class="chip-btn" data-prompt="What is a merge conflict and how do I fix it?">🔀 Merge Conflicts</button>
+            <button class="chip-btn" data-prompt="Show open pull requests for octocat/Spoon-Knife">🚀 Inspect PRs</button>
+          </div>
+        </div>
+
+        <!-- CHAT INPUT FORM -->
+        <form class="chat-input-container" id="chat-form">
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="chat-input" 
+              class="chat-input" 
+              placeholder="Ask GitCoach about Git commands, GitHub repos, or request next task..." 
+              autocomplete="off"
+              required
+            />
+          </div>
+          <button type="submit" id="send-btn" class="btn-primary" aria-label="Send message">
+            <span>Send</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </section>
+
+      <!-- RIGHT SIDEBAR: LESSON DETAILS & QUIZ LAB -->
+      <aside class="sidebar-lesson-lab" aria-label="Lesson Lab & Quiz">
+        <div class="lab-header">
+          <div class="lab-tag" id="lab-lesson-num">LESSON 1</div>
+          <h2 class="lab-title" id="lab-lesson-title">Git vs GitHub</h2>
+          <p class="lab-desc" id="lab-lesson-desc">Understand the fundamental distinction between local version control and cloud collaboration.</p>
+        </div>
+
+        <!-- TABS FOR LESSON DETAILS -->
+        <div class="lab-tabs">
+          <button class="tab-btn active" id="tab-btn-guide" data-tab="guide">Guide & Task</button>
+          <button class="tab-btn" id="tab-btn-quiz" data-tab="quiz">Interactive Quiz <span class="tab-score-badge" id="tab-quiz-badge">Pending</span></button>
+        </div>
+
+        <!-- TAB CONTENT: GUIDE -->
+        <div class="tab-panel active" id="tab-panel-guide">
+          <div class="lab-section">
+            <h3 class="section-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Core Concept
+            </h3>
+            <div class="concept-body" id="lab-explanation">
+              Git is a distributed version control software installed locally on your computer. It tracks file changes and history offline. GitHub is a cloud platform that hosts remote Git repositories and adds collaboration tools.
+            </div>
+          </div>
+
+          <div class="lab-section">
+            <div class="section-title-row">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                Terminal Example
+              </h3>
+              <button class="copy-btn" id="copy-example-btn" title="Copy command">Copy</button>
+            </div>
+            <pre class="code-block"><code id="lab-code-example">git --version          # Runs locally on your machine
+github.com/octocat     # Remote cloud hosting</code></pre>
+          </div>
+
+          <div class="lab-section practical-task-card">
+            <h3 class="section-title text-emerald">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Practical Task
+            </h3>
+            <div class="task-body" id="lab-task">
+              Ask the agent to search for popular repositories using search_repositories to see real projects on GitHub.
+            </div>
+            <button class="btn-task-action" id="ask-task-btn">
+              Ask Agent About This Task &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: QUIZ -->
+        <div class="tab-panel" id="tab-panel-quiz">
+          <div class="quiz-card" id="quiz-container">
+            <div class="quiz-question-header">
+              <span class="quiz-badge">KNOWLEDGE CHECK</span>
+              <span class="quiz-status-indicator" id="quiz-status-text">Not Completed</span>
+            </div>
+            <h3 class="quiz-question" id="quiz-question-text">Loading question...</h3>
+
+            <div class="quiz-options" id="quiz-options-list">
+              <!-- Options populated dynamically -->
+            </div>
+
+            <button class="btn-primary w-full" id="submit-quiz-btn" disabled>
+              Check Answer & Record Score
+            </button>
+
+            <div class="quiz-feedback" id="quiz-feedback-box" style="display: none;">
+              <div class="feedback-title" id="feedback-title"></div>
+              <div class="feedback-body" id="feedback-body"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
